@@ -5,7 +5,7 @@ CC = gcc
 TARGET = main
 
 # Source file
-SRC = main.c gui.c ops.c
+SRC = main.c gui.c ops.c app.c
 
 # GTK4 flags provided by pkg-config
 CFLAGS = `pkg-config --cflags gtk4`
