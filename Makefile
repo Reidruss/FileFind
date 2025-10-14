@@ -1,23 +1,25 @@
-# Compiler
-CC = gcc
+CC := gcc
+CFLAGS := `pkg-config --cflags gtk4` -Iinclude -Isrc -g
+LIBS := `pkg-config --libs gtk4`
 
-# The name of the executable
-TARGET = main
+TARGET   := main
+SRC 	 := src/main.c src/gui.c src/ops.c src/app.c
+OBJDIR   := objs
+OBJS 	 := $(SRC:src/%.c=$(OBJDIR)/%.o)
 
-# Source file
-SRC = main.c gui.c ops.c app.c
-
-# GTK4 flags provided by pkg-config
-CFLAGS = `pkg-config --cflags gtk4`
-LIBS = `pkg-config --libs gtk4`
-
-# Default target
 all: $(TARGET)
 
-# How to compile the program
-$(TARGET): $(SRC)
-	$(CC) $(CFLAGS) -o $(TARGET) $(SRC) $(LIBS)
+$(TARGET): $(OBJS)
+	$(CC) $(LDFLAGS) -o $@ $(OBJS) $(LIBS)
 
-# Clean up compiled files
+$(OBJDIR)/%.o: src/%.c | $(OBJDIR)
+	$(CC) $(CFLAGS) -c $< -o $@
+
+$(OBJDIR):
+	mkdir -p $(OBJDIR)
+
 clean:
-	rm -f $(TARGET)
+	rm -f $(OBJS) $(TARGET)
+	rm -rf $(OBJDIR)
+
+.PHONY: all clean
