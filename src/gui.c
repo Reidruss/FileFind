@@ -1,61 +1,49 @@
 #include <stdio.h>
+#include <stdbool.h>
 #include <gtk/gtk.h>
+
 #include "ops.h"
+#include "gui.h"
 
-GtkWidget *create_main_window(GtkApplication *app) {
-    GtkWidget *window;
-    GtkWidget *box;
-    GtkWidget *search_bar;
-    GtkWidget *file_view;
-    GtkWidget *scroll_window;
+GtkWidget *create_main_window(GtkApplication *app) 
+{
+    GtkWidget *window = gtk_application_window_new(app);
 
-    /* Setting up the window. */
-    window = gtk_application_window_new(app);
     gtk_window_set_title(GTK_WINDOW(window), "FileFind");
     gtk_window_set_default_size(GTK_WINDOW(window), 1400, 900);
+    gtk_window_set_resizable(GTK_WINDOW(window), TRUE);
+    gtk_window_set_decorated(GTK_WINDOW(window), TRUE);
 
-    box = gtk_box_new(GTK_ORIENTATION_VERTICAL, 5);
-    gtk_window_set_child(GTK_WINDOW(window), box);
+    GtkWidget *header = gtk_header_bar_new();
+    gtk_header_bar_set_show_title_buttons(GTK_HEADER_BAR(header), FALSE);
 
-    /* Setting up Search Bar for directories. */
-    search_bar = gtk_entry_new();
-    gtk_entry_set_placeholder_text(GTK_ENTRY(search_bar), "Enter directory path...");
-    gtk_box_append(GTK_BOX(box), search_bar);
+    GtkWidget *title_label = gtk_label_new("FileFind");
+    gtk_header_bar_set_title_widget(GTK_HEADER_BAR(header), title_label);
 
-    /* Setting up list for viewing files in a directory. */
-    GtkStringList *file_list = gtk_string_list_new(NULL);
-    GtkSingleSelection *single_selection = gtk_single_selection_new(G_LIST_MODEL(file_list));
-    GtkListItemFactory *factory = gtk_signal_list_item_factory_new();
-
-    g_signal_connect(factory, "setup", G_CALLBACK(setup_list_item), NULL);
-    g_signal_connect(factory, "bind", G_CALLBACK(bind_list_item), NULL);
-
-    file_view = gtk_list_view_new(GTK_SELECTION_MODEL(single_selection), factory);
-
-    /* Adding scroll function. */
-    scroll_window = gtk_scrolled_window_new();
-    gtk_widget_set_vexpand(scroll_window, TRUE);
-    gtk_scrolled_window_set_child(GTK_SCROLLED_WINDOW(scroll_window), file_view);
-    gtk_scrolled_window_set_has_frame(GTK_SCROLLED_WINDOW(scroll_window), TRUE);
-
-    /* Add Create and Delete buttons */
-    GtkWidget *create_button = gtk_button_new_with_label("Create File");
-    GtkWidget *delete_button = gtk_button_new_with_label("Delete File");
-
-    gtk_box_append(GTK_BOX(box), create_button);
-    gtk_box_append(GTK_BOX(box), delete_button);
-
-    // Connect signals to their respective callbacks
-    g_signal_connect(create_button, "clicked", G_CALLBACK(on_create_file), file_list);
-    g_signal_connect(delete_button, "clicked", G_CALLBACK(on_delete_file), single_selection);
-
-    gtk_box_append(GTK_BOX(box), scroll_window);
-
-    /* Search bar signal. */ 
-    g_signal_connect(search_bar, "activate", G_CALLBACK(on_directory_search), file_list);
+    header = add_header_buttons(window, header);
+    gtk_window_set_titlebar(GTK_WINDOW(window), header);
 
     return window;
 }
 
+GtkWidget *add_header_buttons(GtkWidget *window, GtkWidget *header)
+{
+    GtkWidget *close_button = gtk_button_new_from_icon_name("window-close-symbolic");
+    GtkWidget *max_button = gtk_button_new_from_icon_name("window-maximize-symbolic");
+    GtkWidget *min_button = gtk_button_new_from_icon_name("window-minimize-symbolic");
+    
+    gtk_widget_add_css_class(min_button, "flat");
+    gtk_widget_add_css_class(max_button, "flat");
+    gtk_widget_add_css_class(close_button, "flat");
 
+    g_signal_connect_swapped(close_button, "clicked", G_CALLBACK(gtk_window_close), window);
+    g_signal_connect_swapped(max_button, "clicked", G_CALLBACK(on_maximize_clicked), window);
+    g_signal_connect_swapped(min_button, "clicked", G_CALLBACK(gtk_window_minimize), window);
+    
+    gtk_header_bar_pack_end(GTK_HEADER_BAR(header), close_button);
+    gtk_header_bar_pack_end(GTK_HEADER_BAR(header), max_button);
+    gtk_header_bar_pack_end(GTK_HEADER_BAR(header), min_button);
+
+    return header;
+}
 

@@ -3,7 +3,8 @@
 #include <string.h>
 #include "ops.h"
 
-void on_directory_search(GtkEntry *entry, gpointer user_data) {
+void on_directory_search(GtkEntry *entry, gpointer user_data) 
+{
     GtkEntryBuffer *buffer = gtk_entry_get_buffer(entry);
     const gchar *path = gtk_entry_buffer_get_text(buffer);
     GtkStringList *files = GTK_STRING_LIST(user_data);
@@ -12,12 +13,14 @@ void on_directory_search(GtkEntry *entry, gpointer user_data) {
     unsigned int j;
 
     /* Erasing the list to add new files. */
-    for (int j = 0; j < i ; j++) {
+    for (int j = 0; j < i ; j++) 
+    {
         gtk_string_list_remove(files, 0);
     }
     
     DIR *dir = opendir(path);
-    if (!dir) {
+    if (!dir) 
+    {
         g_print("Invalid Path: %s\n", path);
         i = 0;
         return;
@@ -25,8 +28,10 @@ void on_directory_search(GtkEntry *entry, gpointer user_data) {
 
     struct dirent *dent;
     i = 0;
-    while ((dent = readdir(dir)) != NULL) {
-        if (strcmp(dent->d_name, ".") == 0 || strcmp(dent->d_name, "..") == 0) {
+    while ((dent = readdir(dir)) != NULL) 
+    {
+        if (strcmp(dent->d_name, ".") == 0 || strcmp(dent->d_name, "..") == 0) 
+        {
             continue;
         }
         gtk_string_list_append(files, dent->d_name);
@@ -35,18 +40,21 @@ void on_directory_search(GtkEntry *entry, gpointer user_data) {
     closedir(dir);
 }
 
-void setup_list_item(GtkListItemFactory *factory, GtkListItem *list_item, gpointer user_data) {
+void setup_list_item(GtkListItemFactory *factory, GtkListItem *list_item, gpointer user_data) 
+{
     GtkWidget *label = gtk_label_new(NULL);
     gtk_list_item_set_child(list_item, label);
 }
 
-void bind_list_item(GtkListItemFactory *factory, GtkListItem *list_item, gpointer user_data) {
+void bind_list_item(GtkListItemFactory *factory, GtkListItem *list_item, gpointer user_data) 
+{
     GtkWidget *label = gtk_list_item_get_child(list_item);
     GtkStringObject *string_obj = gtk_list_item_get_item(list_item);
     gtk_label_set_text(GTK_LABEL(label), gtk_string_object_get_string(string_obj));
 }
 
-void on_create_file(GtkWidget *button, gpointer user_data) {
+void on_create_file(GtkWidget *button, gpointer user_data) 
+{
     GtkWidget *dialog, *entry, *content_area;
     GtkStringList *files = GTK_STRING_LIST(user_data);
 
@@ -57,7 +65,8 @@ void on_create_file(GtkWidget *button, gpointer user_data) {
         GTK_DIALOG_MODAL,
         "_Cancel", GTK_RESPONSE_CANCEL,
         "_Create", GTK_RESPONSE_ACCEPT,
-        NULL);
+        NULL
+    );
 
     // Add an entry to the content area
     content_area = gtk_dialog_get_content_area(GTK_DIALOG(dialog));
@@ -72,23 +81,31 @@ void on_create_file(GtkWidget *button, gpointer user_data) {
     gtk_widget_show(dialog);
 }
 
-void on_create_file_response(GtkDialog *dialog, int response_id, gpointer user_data) {
+void on_create_file_response(GtkDialog *dialog, int response_id, gpointer user_data) 
+{
     GtkWidget *entry = gtk_widget_get_first_child(gtk_dialog_get_content_area(dialog));
     GtkStringList *files = GTK_STRING_LIST(user_data);
 
-    if (response_id == GTK_RESPONSE_ACCEPT) {
+    if (response_id == GTK_RESPONSE_ACCEPT) 
+    {
         GtkEntryBuffer *buffer = gtk_entry_get_buffer(GTK_ENTRY(entry));
         const gchar *filename = gtk_entry_buffer_get_text(buffer);
 
-        if (strlen(filename) > 0) {
+        if (strlen(filename) > 0) 
+        {
             FILE *file = fopen(filename, "w");
-            if (file) {
+            if (file) 
+            {
                 fclose(file);
                 gtk_string_list_append(files, filename);
-            } else {
+            } 
+            else 
+            {
                 g_print("Failed to create file: %s\n", filename);
             }
-        } else {
+        } 
+        else 
+        {
             g_print("No file name provided.\n");
         }
     }
@@ -97,12 +114,14 @@ void on_create_file_response(GtkDialog *dialog, int response_id, gpointer user_d
 }
 
 
-void on_delete_file(GtkWidget *button, gpointer user_data) {
+void on_delete_file(GtkWidget *button, gpointer user_data) 
+{
     GtkSingleSelection *single_selection = GTK_SINGLE_SELECTION(user_data);
 
     /* Finding the postion of the selected file. */
     guint position = gtk_single_selection_get_selected(single_selection);
-    if (position == GTK_INVALID_LIST_POSITION) {
+    if (position == GTK_INVALID_LIST_POSITION) 
+    {
         g_print("No file selected for deletion.\n");
         return;
     }
@@ -111,11 +130,26 @@ void on_delete_file(GtkWidget *button, gpointer user_data) {
     const gchar *file_name = gtk_string_object_get_string(string_obj);
 
     /* Deleting the file if able to and removing from the StringList. */
-    if (remove(file_name) == 0) {
+    if (remove(file_name) == 0) 
+    {
         g_print("File deleted: %s\n", file_name);
         gtk_string_list_remove(GTK_STRING_LIST(gtk_single_selection_get_model(single_selection)), position);
-    } else {
+    } 
+    else 
+    {
         g_print("Failed to delete file: %s\n", file_name);
     }
     
+}
+
+void on_maximize_clicked(GtkWindow *window, GtkButton *button)
+{
+    if (gtk_window_is_maximized(window))
+    {
+        gtk_window_unmaximize(window);
+    }
+    else
+    {
+        gtk_window_maximize(window);
+    }
 }

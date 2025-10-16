@@ -7,7 +7,7 @@ void bind_list_item(GtkListItemFactory *factory, GtkListItem *list_item, gpointe
 void on_create_file(GtkWidget *button, gpointer user_data);
 void on_create_file_response(GtkDialog *dialog, int response_id, gpointer user_data);
 void on_delete_file(GtkWidget *button, gpointer user_data);
-
+void on_maximize_clicked(GtkWindow *window, GtkButton *button);
 
 
 
