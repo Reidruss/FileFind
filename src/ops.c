@@ -3,34 +3,41 @@
 #include <string.h>
 #include "ops.h"
 
+static const char *cur_filepath;
+
 void on_directory_search(GtkEntry *entry, gpointer user_data) 
 {
-    GtkEntryBuffer *buffer = gtk_entry_get_buffer(entry);
-    const gchar *path = gtk_entry_buffer_get_text(buffer);
-    GtkStringList *files = GTK_STRING_LIST(user_data);
+    GtkEntryBuffer *buffer;
+    GtkStringList *files;
+    const char *prev_path;
+
+    buffer = gtk_entry_get_buffer(entry);
+    cur_filepath = gtk_entry_buffer_get_text(buffer);
+    files = GTK_STRING_LIST(user_data);
+    //const char *path = gtk_entry_buffer_get_text(buffer);
 
     static unsigned int i = 0;
     unsigned int j;
 
-    /* Erasing the list to add new files. */
+    /* Erasing old entries to replace with new entries. */
     for (int j = 0; j < i ; j++) 
     {
         gtk_string_list_remove(files, 0);
     }
     
-    DIR *dir = opendir(path);
+    DIR *dir = opendir(cur_filepath);
     if (!dir) 
     {
-        g_print("Invalid Path: %s\n", path);
+        g_print("Invalid Path: %s\n", cur_filepath);
         i = 0;
         return;
     }
-
+    prev_path = cur_filepath;
     struct dirent *dent;
     i = 0;
     while ((dent = readdir(dir)) != NULL) 
     {
-        if (strcmp(dent->d_name, ".") == 0 || strcmp(dent->d_name, "..") == 0) 
+        if (strcmp(dent->d_name, ".") == 0 || strcmp(dent->d_name, "..") == 0 || dent->d_name[0] == '.') 
         {
             continue;
         }
@@ -58,7 +65,6 @@ void on_create_file(GtkWidget *button, gpointer user_data)
     GtkWidget *dialog, *entry, *content_area;
     GtkStringList *files = GTK_STRING_LIST(user_data);
 
-    // Create the dialog
     dialog = gtk_dialog_new_with_buttons(
         "Create File",
         NULL,
@@ -68,18 +74,18 @@ void on_create_file(GtkWidget *button, gpointer user_data)
         NULL
     );
 
-    // Add an entry to the content area
     content_area = gtk_dialog_get_content_area(GTK_DIALOG(dialog));
     entry = gtk_entry_new();
     gtk_entry_set_placeholder_text(GTK_ENTRY(entry), "Enter file name...");
     gtk_box_append(GTK_BOX(content_area), entry);
     gtk_widget_show(entry);
 
-    // Connect the response signal
     g_signal_connect(dialog, "response", G_CALLBACK(on_create_file_response), files);
 
     gtk_widget_show(dialog);
 }
+
+/* === FILE OPERATIONS === */
 
 void on_create_file_response(GtkDialog *dialog, int response_id, gpointer user_data) 
 {
@@ -139,17 +145,70 @@ void on_delete_file(GtkWidget *button, gpointer user_data)
     {
         g_print("Failed to delete file: %s\n", file_name);
     }
-    
+}
+
+void open_file(char *filepath)
+{
+    g_print("Opening filepath: %s\n", filepath);
 }
 
 void on_maximize_clicked(GtkWindow *window, GtkButton *button)
 {
-    if (gtk_window_is_maximized(window))
-    {
-        gtk_window_unmaximize(window);
-    }
-    else
-    {
-        gtk_window_maximize(window);
-    }
+    gtk_window_is_maximized(window) ? gtk_window_unmaximize(window) : gtk_window_maximize(window);
 }
+
+
+/* THIS DOES NOT WORK AT THE MOMENT */
+void on_entry_selected(GtkListView *list, guint position, gpointer user_data)
+{
+    GtkEntry *search_entry = GTK_ENTRY(user_data);
+
+    GtkSelectionModel *model = gtk_list_view_get_model(list);
+    GtkSingleSelection *sel = GTK_SINGLE_SELECTION(model);
+    GtkStringList *strings = GTK_STRING_LIST(gtk_single_selection_get_model(sel));
+
+    if (position == GTK_INVALID_LIST_POSITION) 
+    {
+        g_print("Invalid selection position\n");
+        return;
+    }
+    
+    const char *name = gtk_string_list_get_string(strings, position);
+    if (!name) 
+    {
+        g_print("Failed to get selected name\n");
+        return;
+    }
+
+    /* Build the new path from the current entry text and the selected name */
+    GtkEntryBuffer *buffer = gtk_entry_get_buffer(search_entry);
+    const char *cur_path = gtk_entry_buffer_get_text(buffer);
+    gchar *new_path = g_build_filename(cur_path, name, NULL);
+
+    /* If it's a directory, update the entry and refresh the list. Otherwise open the file. */
+    if (g_file_test(new_path, G_FILE_TEST_IS_DIR)) 
+    {
+        GtkEntryBuffer *new_buffer = gtk_entry_buffer_new(new_path, -1);
+        gtk_entry_set_buffer(search_entry, new_buffer);
+        g_object_unref(new_buffer);
+        on_directory_search(search_entry, strings);
+    } 
+    else 
+    {
+        open_file(new_path);
+    }
+
+    g_free(new_path);
+}
+
+
+void on_home_button_clicked(GtkWidget *button, gpointer user_data)
+{
+    GtkWindow *window = GTK_WINDOW(user_data);
+    GtkEntry *search_entry = g_object_get_data(G_OBJECT(window), "search_entry");
+    GtkStringList *file_list = g_object_get_data(G_OBJECT(window), "file_list");
+
+    gtk_editable_set_text(GTK_EDITABLE(search_entry), g_get_home_dir());
+    on_directory_search(search_entry, file_list);
+}
+
