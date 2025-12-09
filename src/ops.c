@@ -216,6 +216,8 @@ void on_entry_selected(GtkListView *list, guint position, gpointer user_data)
 }
 
 
+/* === BUTTON CLICK ACTIONS === */
+
 void on_home_button_clicked(GtkWidget *button, gpointer user_data)
 {
     GtkWindow *window = GTK_WINDOW(user_data);
@@ -225,4 +227,62 @@ void on_home_button_clicked(GtkWidget *button, gpointer user_data)
     gtk_editable_set_text(GTK_EDITABLE(search_entry), g_get_home_dir());
     on_directory_search(search_entry, file_list);
 }
+
+void on_documents_button_clicked(GtkWidget *button, gpointer user_data)
+{
+    GtkWindow *window = GTK_WINDOW(user_data);
+    GtkEntry *search_entry = g_object_get_data(G_OBJECT(window), "search_entry");
+    GtkStringList *file_list = g_object_get_data(G_OBJECT(window), "file_list");
+
+    gtk_editable_set_text(GTK_EDITABLE(search_entry), g_get_user_special_dir(G_USER_DIRECTORY_DOCUMENTS));
+    on_directory_search(search_entry, file_list);
+}
+
+void on_desktop_button_clicked(GtkWidget *button, gpointer user_data)
+{
+    GtkWindow *window = GTK_WINDOW(user_data);
+    GtkEntry *search_entry = g_object_get_data(G_OBJECT(window), "search_entry");
+    GtkStringList *file_list = g_object_get_data(G_OBJECT(window), "file_list");
+
+    gtk_editable_set_text(GTK_EDITABLE(search_entry), g_get_user_special_dir(G_USER_DIRECTORY_DESKTOP));
+    on_directory_search(search_entry, file_list);
+}
+
+void on_music_button_clicked(GtkWidget *button, gpointer user_data)
+{
+    GtkWindow *window = GTK_WINDOW(user_data);
+    GtkEntry *search_entry = g_object_get_data(G_OBJECT(window), "search_entry");
+    GtkStringList *file_list = g_object_get_data(G_OBJECT(window), "file_list");
+
+    gtk_editable_set_text(GTK_EDITABLE(search_entry), g_get_user_special_dir(G_USER_DIRECTORY_MUSIC));
+    on_directory_search(search_entry, file_list);
+}
+void on_pictures_button_clicked(GtkWidget *button, gpointer user_data)
+{
+    GtkWindow *window = GTK_WINDOW(user_data);
+    GtkEntry *search_entry = g_object_get_data(G_OBJECT(window), "search_entry");
+    GtkStringList *file_list = g_object_get_data(G_OBJECT(window), "file_list");
+
+    gtk_editable_set_text(GTK_EDITABLE(search_entry), g_get_user_special_dir(G_USER_DIRECTORY_PICTURES));
+    on_directory_search(search_entry, file_list);
+}
+void on_vidoes_button_clicked(GtkWidget *button, gpointer user_data)
+{
+    GtkWindow *window = GTK_WINDOW(user_data);
+    GtkEntry *search_entry = g_object_get_data(G_OBJECT(window), "search_entry");
+    GtkStringList *file_list = g_object_get_data(G_OBJECT(window), "file_list");
+
+    gtk_editable_set_text(GTK_EDITABLE(search_entry), g_get_user_special_dir(G_USER_DIRECTORY_VIDEOS));
+    on_directory_search(search_entry, file_list);
+}
+void on_trash_button_clicked(GtkWidget *button, gpointer user_data)
+{
+    GtkWindow *window = GTK_WINDOW(user_data);
+    GtkEntry *search_entry = g_object_get_data(G_OBJECT(window), "search_entry");
+    GtkStringList *file_list = g_object_get_data(G_OBJECT(window), "file_list");
+
+    gtk_editable_set_text(GTK_EDITABLE(search_entry), g_get_user_special_dir(G_USER_DIRECTORY_VIDEOS));
+    on_directory_search(search_entry, file_list);
+}
+
 
