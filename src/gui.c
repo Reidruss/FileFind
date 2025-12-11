@@ -14,7 +14,6 @@ GtkWidget *create_flat_header_button(GtkWidget *window, const char *icon_name, G
 
 GtkWidget *add_header_control_buttons(GtkWidget *window, GtkWidget *header)
 {
-
     GtkWidget *close_button = create_flat_header_button(window, "window-close-symbolic",
                                                         G_CALLBACK(gtk_window_close));
     GtkWidget *maximize_button = create_flat_header_button(window, "window-maximize-symbolic",
@@ -119,11 +118,10 @@ GtkWidget *create_main_window(GtkApplication *app)
     GtkStringList *file_list = gtk_string_list_new(NULL);
     GtkSingleSelection *single_selection = gtk_single_selection_new(G_LIST_MODEL(file_list));
     GtkListItemFactory *factory = gtk_signal_list_item_factory_new();
-
     g_signal_connect(factory, "setup", G_CALLBACK(setup_list_item), NULL);
     g_signal_connect(factory, "bind", G_CALLBACK(bind_list_item), NULL);
-
     GtkWidget *file_view = gtk_list_view_new(GTK_SELECTION_MODEL(single_selection), factory);
+
 
     /* Pass the search entry as user_data so the activate handler can update it */
     g_signal_connect(file_view, "activate", G_CALLBACK(on_entry_selected), search_entry);

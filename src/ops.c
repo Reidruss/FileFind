@@ -3,18 +3,23 @@
 #include <string.h>
 #include "ops.h"
 
-static const char *cur_filepath;
+static char *cur_filepath = NULL;
 
 void on_directory_search(GtkEntry *entry, gpointer user_data)
 {
     GtkEntryBuffer *buffer;
     GtkStringList *files;
-    const char *prev_path;
 
     buffer = gtk_entry_get_buffer(entry);
-    cur_filepath = gtk_entry_buffer_get_text(buffer);
+    const char *path_text = gtk_entry_buffer_get_text(buffer);
+
+    /* Update current path safely */
+    if (cur_filepath) {
+        g_free(cur_filepath);
+    }
+    cur_filepath = g_strdup(path_text);
+
     files = GTK_STRING_LIST(user_data);
-    //const char *path = gtk_entry_buffer_get_text(buffer);
 
     static unsigned int i = 0;
     unsigned int j;
@@ -32,7 +37,7 @@ void on_directory_search(GtkEntry *entry, gpointer user_data)
         i = 0;
         return;
     }
-    prev_path = cur_filepath;
+    
     struct dirent *dent;
     i = 0;
     while ((dent = readdir(dir)) != NULL)
@@ -49,15 +54,37 @@ void on_directory_search(GtkEntry *entry, gpointer user_data)
 
 void setup_list_item(GtkListItemFactory *factory, GtkListItem *list_item, gpointer user_data)
 {
+    GtkWidget *box = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 12);
+    GtkWidget *icon = gtk_image_new();
     GtkWidget *label = gtk_label_new(NULL);
-    gtk_list_item_set_child(list_item, label);
+
+    gtk_box_append(GTK_BOX(box), icon);
+    gtk_box_append(GTK_BOX(box), label);
+    
+    gtk_list_item_set_child(list_item, box);
 }
 
 void bind_list_item(GtkListItemFactory *factory, GtkListItem *list_item, gpointer user_data)
 {
-    GtkWidget *label = gtk_list_item_get_child(list_item);
+    GtkWidget *box = gtk_list_item_get_child(list_item);
+    GtkWidget *icon = gtk_widget_get_first_child(box);
+    GtkWidget *label = gtk_widget_get_next_sibling(icon);
+
     GtkStringObject *string_obj = gtk_list_item_get_item(list_item);
-    gtk_label_set_text(GTK_LABEL(label), gtk_string_object_get_string(string_obj));
+    const char *filename = gtk_string_object_get_string(string_obj);
+    
+    gtk_label_set_text(GTK_LABEL(label), filename);
+
+    /* Determine icon based on file type */
+    char *full_path = g_build_filename(cur_filepath, filename, NULL);
+    
+    if (g_file_test(full_path, G_FILE_TEST_IS_DIR)) {
+        gtk_image_set_from_icon_name(GTK_IMAGE(icon), "folder-symbolic");
+    } else {
+        gtk_image_set_from_icon_name(GTK_IMAGE(icon), "text-x-generic-symbolic");
+    }
+    
+    g_free(full_path);
 }
 
 static void on_create_file_accept(GtkWidget *button, gpointer user_data)
@@ -281,7 +308,10 @@ void on_trash_button_clicked(GtkWidget *button, gpointer user_data)
     GtkEntry *search_entry = g_object_get_data(G_OBJECT(window), "search_entry");
     GtkStringList *file_list = g_object_get_data(G_OBJECT(window), "file_list");
 
-    gtk_editable_set_text(GTK_EDITABLE(search_entry), g_get_user_special_dir(G_USER_DIRECTORY_VIDEOS));
+    gchar *trash_path = g_build_filename(g_get_user_data_dir(), "Trash", "files", NULL);
+    gtk_editable_set_text(GTK_EDITABLE(search_entry), trash_path);
+    g_free(trash_path);
+
     on_directory_search(search_entry, file_list);
 }
 
