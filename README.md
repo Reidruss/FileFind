@@ -1,28 +1,71 @@
 # FileFind
-## File Explorer and Manager
 
-A lightweight and efficient file explorer and manager built using C and GTK4. This application is designed to provide an intuitive and responsive interface for navigating, organizing, and managing files on Linux systems.
+FileFind is a lightweight file manager built with C and GTK4 for Linux.
 
-## Features
+## Current Features
 
-- **File Navigation**: Explore directories and view file structures with ease.
-- **File Operations**: Perform common file operations such as:
-  - Create
-  - Delete
+- Navigate directories by typing a path in the top input and pressing Enter.
+- Browse common locations from the sidebar:
+  - Home
+  - Desktop
+  - Documents
+  - Music
+  - Pictures
+  - Videos
+  - Trash
+- Open files with the system default application.
+- Create files from the `Create File` button.
+- Right-click file items for context actions:
+  - Open
   - Rename
-- **Search Functionality**: Quickly search for files or directories.
-- **Responsive UI**: A clean and modern interface leveraging GTK4.
-- **Error Handling**: Provides feedback for invalid operations or inaccessible files.
+  - Delete
+- Double-click (activate) list items:
+  - Directories: enter directory
+  - Files: open with default application
 
-### Prerequisites
+## Tech Stack
 
-Ensure you have the following installed on your system:
+- C
+- GTK4
+- POSIX/GLib file APIs
 
-- GCC (GNU Compiler Collection)
+## Prerequisites
+
+- GCC
+- `make`
 - GTK4 development libraries
 
-You can install GTK4 development libraries on Ubuntu-based systems using:
+Ubuntu/Debian:
 
 ```bash
 sudo apt update
-sudo apt install libgtk-4-dev
+sudo apt install -y build-essential libgtk-4-dev
+```
+
+## Build and Run
+
+From the project root:
+
+```bash
+make
+./main
+```
+
+## Project Structure
+
+```text
+include/
+  app.h
+  gui.h
+  ops.h
+src/
+  app.c
+  gui.c
+  main.c
+  ops.c
+```
+
+## Notes
+
+- Context menu actions are currently shown only for file entries (not folders).
+- Hidden entries (dotfiles) are not displayed in the file list.
